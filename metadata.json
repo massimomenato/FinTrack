@@ -1,0 +1,5 @@
+{
+  "name": "Software finanza personale",
+  "description": "A comprehensive tool to track daily, recurring, and future expenses. It provides insights into spending habits with category-based tracking, account management, and end-of-year balance projections to help you manage your personal finances effectively.",
+  "requestFramePermissions": []
+}
