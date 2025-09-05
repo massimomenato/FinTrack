@@ -1,45 +1,1867 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Personal Finance Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-  <script>
+    <script>
     tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          keyframes: {
-            fadeIn: {
-              '0%': { opacity: 0, transform: 'translateY(10px)' },
-              '100%': { opacity: 1, transform: 'translateY(0)' },
+        darkMode: 'class',
+        theme: {
+            extend: {
+                keyframes: {
+                    fadeIn: {
+                        '0%': { opacity: 0, transform: 'translateY(10px)' },
+                        '100%': { opacity: 1, transform: 'translateY(0)' },
+                    }
+                },
+                animation: {
+                    'fade-in': 'fadeIn 0.3s ease-out',
+                }
             }
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.3s ease-out',
-          }
         }
-      }
     }
-  </script>
-  <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@18.2.0",
-    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
-    "recharts": "https://esm.sh/recharts@2.12.7?deps=react@18.2.0",
-    "react-dom/": "https://esm.sh/react-dom@18.2.0/",
-    "react/": "https://esm.sh/react@18.2.0/",
-    "react-dom": "https://aistudiocdn.com/react-dom@^19.1.1",
-    "uuid": "https://aistudiocdn.com/uuid@^11.1.0"
-  }
-}
-</script>
+    </script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
+    <script src="https://unpkg.com/uuid@8.3.2/dist/umd/uuidv4.min.js"></script>
 </head>
-  <body class="bg-slate-100 dark:bg-gray-900">
+<body class="bg-slate-100 dark:bg-gray-900">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+    <div id="modal-root"></div>
+
+    <script type="text/babel">
+        //+++++++++ START OF EMBEDDED APPLICATION CODE +++++++++
+
+        //=========================================
+        // TRANSLATIONS
+        //=========================================
+        const translations = {
+            en: {
+                "dashboard": "Dashboard",
+                "transactions": "Transactions",
+                "settings": "Settings",
+                "welcome": "Welcome to Your Personal Finance Tracker!",
+                "getStarted": "Get started by adding your first bank account.",
+                "addFirstAccount": "Go to Settings to Add Account",
+                "addIncome": "Add Income",
+                "addExpense": "Add Expense",
+                "editExpense": "Edit Expense",
+                "editIncome": "Edit Income",
+                "selectAccounts": "Select Accounts",
+                "allAccounts": "All Accounts",
+                "accountsSelected": "accounts selected",
+                "currentBalance": "Current Balance",
+                "monthlyIncome": "Monthly Income",
+                "monthlyExpenses": "Monthly Expenses",
+                "monthlySpendingByCategory": "Monthly Spending by Category",
+                "noExpensesThisMonth": "No expenses recorded for this month.",
+                "goalsAndBudgetsTitle": "Goals & Budgets",
+                "savingsGoal": "Monthly Savings Goal",
+                "savedThisMonth": "Saved this month",
+                "categoryBudgetsTitle": "Category Budgets",
+                "noGoalsSet": "No savings goal or budgets set up. Go to settings to add them.",
+                "recentTransactionsTitle": "Recent Transactions",
+                "viewAllTransactions": "View All Transactions",
+                "noRecentTransactions": "No recent transactions to display.",
+                "allTransactions": "All Transactions for this Month",
+                "noTransactionsRecorded": "No transactions recorded for this month.",
+                "tableTitle": "Title",
+                "tableAmount": "Amount",
+                "tableCategory": "Category",
+                "tableDate": "Date",
+                "tableAccount": "Account",
+                "tableActions": "Actions",
+                "income": "Income",
+                "edit": "Edit",
+                "delete": "Delete",
+                "close": "Close",
+                "formRequiredFields": "Please fill in all required fields.",
+                "formTitle": "Title",
+                "formAmount": "Amount",
+                "formCategory": "Category",
+                "formDate": "Date",
+                "formAccount": "Account",
+                "formRecurrence": "Recurrence",
+                "recurrence_None": "None",
+                "recurrence_Weekly": "Weekly",
+                "recurrence_Bi-weekly": "Bi-weekly",
+                "recurrence_Monthly": "Monthly",
+                "recurrence_Yearly": "Yearly",
+                "formCancel": "Cancel",
+                "formSaveExpense": "Save Expense",
+                "formSaveIncome": "Save Income",
+                "deleteTransactionTitle": "Delete Transaction",
+                "deleteTransactionMessage": "Are you sure you want to delete this transaction? This action cannot be undone.",
+                "settingsManagementTitle": "Management",
+                "settingsAppearanceTitle": "Appearance",
+                "settingsTheme": "Theme",
+                "settingsDarkMode": "Dark Mode",
+                "settingsLanguageAndCurrency": "Language & Currency",
+                "settingsLanguage": "Language",
+                "settingsCurrency": "Currency",
+                "currency_USD": "USD - United States Dollar",
+                "currency_EUR": "EUR - Euro",
+                "currency_GBP": "GBP - British Pound",
+                "currency_JPY": "JPY - Japanese Yen",
+                "settingsAccounts": "Accounts",
+                "settingsInitialBalance": "Initial Balance",
+                "noAccounts": "No accounts have been added yet.",
+                "settingsAccountName": "Account Name",
+                "placeholder_checking": "e.g., Checking Account",
+                "settingsAddAccount": "Add Account",
+                "settingsCategories": "Expense Categories",
+                "noCategories": "No categories have been added yet.",
+                "settingsCategoryName": "Category Name",
+                "placeholder_groceries": "e.g., Groceries",
+                "settingsAddCategory": "Add Category",
+                "settingsGoalsAndBudgets": "Goals & Budgets",
+                "settingsMonthlySavingsGoal": "Monthly Savings Goal",
+                "noCategoriesForBudgets": "Add categories first to set budgets.",
+                "deleteAccountTitle": "Delete Account",
+                "deleteAccountMessage": "Are you sure you want to delete the account '{accountName}'? All associated transactions will also be deleted.",
+                "deleteCategoryTitle": "Delete Category",
+                "deleteCategoryMessage": "Are you sure you want to delete the category '{categoryName}'? This will not affect existing expenses.",
+                "changeMonth": "Change month",
+                "previousYear": "Previous year",
+                "nextYear": "Next year",
+                "analysisChartTitle": "Monthly Analysis",
+                "expenses": "Expenses",
+                "noDataForChart": "No data available for the selected period.",
+                "overview": "Overview"
+            },
+            it: {
+                "dashboard": "Dashboard",
+                "transactions": "Transazioni",
+                "settings": "Impostazioni",
+                "welcome": "Benvenuto nel tuo tracker di finanze personali!",
+                "getStarted": "Inizia aggiungendo il tuo primo conto bancario.",
+                "addFirstAccount": "Vai alle Impostazioni per Aggiungere un Conto",
+                "addIncome": "Aggiungi Entrata",
+                "addExpense": "Aggiungi Spesa",
+                "editExpense": "Modifica Spesa",
+                "editIncome": "Modifica Entrata",
+                "selectAccounts": "Seleziona Conti",
+                "allAccounts": "Tutti i conti",
+                "accountsSelected": "conti selezionati",
+                "currentBalance": "Saldo Attuale",
+                "monthlyIncome": "Entrate Mensili",
+                "monthlyExpenses": "Spese Mensili",
+                "monthlySpendingByCategory": "Spesa Mensile per Categoria",
+                "noExpensesThisMonth": "Nessuna spesa registrata per questo mese.",
+                "goalsAndBudgetsTitle": "Obiettivi e Budget",
+                "savingsGoal": "Obiettivo di Risparmio Mensile",
+                "savedThisMonth": "Risparmiato questo mese",
+                "categoryBudgetsTitle": "Budget per Categoria",
+                "noGoalsSet": "Nessun obiettivo di risparmio o budget impostato. Vai alle impostazioni per aggiungerli.",
+                "recentTransactionsTitle": "Transazioni Recenti",
+                "viewAllTransactions": "Vedi Tutte le Transazioni",
+                "noRecentTransactions": "Nessuna transazione recente da mostrare.",
+                "allTransactions": "Tutte le Transazioni del Mese",
+                "noTransactionsRecorded": "Nessuna transazione registrata per questo mese.",
+                "tableTitle": "Titolo",
+                "tableAmount": "Importo",
+                "tableCategory": "Categoria",
+                "tableDate": "Data",
+                "tableAccount": "Conto",
+                "tableActions": "Azioni",
+                "income": "Entrata",
+                "edit": "Modifica",
+                "delete": "Elimina",
+                "close": "Chiudi",
+                "formRequiredFields": "Si prega di compilare tutti i campi obbligatori.",
+                "formTitle": "Titolo",
+                "formAmount": "Importo",
+                "formCategory": "Categoria",
+                "formDate": "Data",
+                "formAccount": "Conto",
+                "formRecurrence": "Ricorrenza",
+                "recurrence_None": "Nessuna",
+                "recurrence_Weekly": "Settimanale",
+                "recurrence_Bi-weekly": "Bisettimanale",
+                "recurrence_Monthly": "Mensile",
+                "recurrence_Yearly": "Annuale",
+                "formCancel": "Annulla",
+                "formSaveExpense": "Salva Spesa",
+                "formSaveIncome": "Salva Entrata",
+                "deleteTransactionTitle": "Elimina Transazione",
+                "deleteTransactionMessage": "Sei sicuro di voler eliminare questa transazione? Questa azione non può essere annullata.",
+                "settingsManagementTitle": "Gestione",
+                "settingsAppearanceTitle": "Aspetto",
+                "settingsTheme": "Tema",
+                "settingsDarkMode": "Modalità Scura",
+                "settingsLanguageAndCurrency": "Lingua e Valuta",
+                "settingsLanguage": "Lingua",
+                "settingsCurrency": "Valuta",
+                "currency_USD": "USD - Dollaro Statunitense",
+                "currency_EUR": "EUR - Euro",
+                "currency_GBP": "GBP - Sterlina Britannica",
+                "currency_JPY": "JPY - Yen Giapponese",
+                "settingsAccounts": "Conti",
+                "settingsInitialBalance": "Saldo Iniziale",
+                "noAccounts": "Nessun conto è stato ancora aggiunto.",
+                "settingsAccountName": "Nome Conto",
+                "placeholder_checking": "es. Conto Corrente",
+                "settingsAddAccount": "Aggiungi Conto",
+                "settingsCategories": "Categorie di Spesa",
+                "noCategories": "Nessuna categoria è stata ancora aggiunta.",
+                "settingsCategoryName": "Nome Categoria",
+                "placeholder_groceries": "es. Spesa",
+                "settingsAddCategory": "Aggiungi Categoria",
+                "settingsGoalsAndBudgets": "Obiettivi e Budget",
+                "settingsMonthlySavingsGoal": "Obiettivo di Risparmio Mensile",
+                "noCategoriesForBudgets": "Aggiungi prima le categorie per impostare i budget.",
+                "deleteAccountTitle": "Elimina Conto",
+                "deleteAccountMessage": "Sei sicuro di voler eliminare il conto '{accountName}'? Tutte le transazioni associate verranno eliminate.",
+                "deleteCategoryTitle": "Elimina Categoria",
+                "deleteCategoryMessage": "Sei sicuro di voler eliminare la categoria '{categoryName}'? Questo non influenzerà le spese esistenti.",
+                "changeMonth": "Cambia mese",
+                "previousYear": "Anno precedente",
+                "nextYear": "Anno successivo",
+                "analysisChartTitle": "Analisi Mensile",
+                "expenses": "Spese",
+                "noDataForChart": "Nessun dato disponibile per il periodo selezionato.",
+                "overview": "Riepilogo"
+            }
+        };
+
+        //=========================================
+        // TYPES
+        //=========================================
+        const Recurrence = {
+            NONE: 'None',
+            WEEKLY: 'Weekly',
+            BIWEEKLY: 'Bi-weekly',
+            MONTHLY: 'Monthly',
+            YEARLY: 'Yearly',
+        };
+
+        //=========================================
+        // HOOKS
+        //=========================================
+        function useLocalStorage(key, initialValue) {
+            const [storedValue, setStoredValue] = React.useState(() => {
+                if (typeof window === 'undefined') {
+                    return initialValue;
+                }
+                try {
+                    const item = window.localStorage.getItem(key);
+                    return item ? JSON.parse(item) : initialValue;
+                } catch (error) {
+                    console.error(error);
+                    return initialValue;
+                }
+            });
+
+            React.useEffect(() => {
+                try {
+                    if (typeof window !== 'undefined') {
+                        window.localStorage.setItem(key, JSON.stringify(storedValue));
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            }, [key, storedValue]);
+
+            React.useEffect(() => {
+                const handleStorageChange = (e) => {
+                    if (e.key === key) {
+                        try {
+                            if (e.newValue) {
+                                setStoredValue(JSON.parse(e.newValue));
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+                };
+
+                window.addEventListener('storage', handleStorageChange);
+                return () => {
+                    window.removeEventListener('storage', handleStorageChange);
+                };
+            }, [key]);
+
+            return [storedValue, setStoredValue];
+        }
+
+        //=========================================
+        // CONSTANTS
+        //=========================================
+        const INITIAL_APP_STATE = {
+            accounts: [],
+            expenses: [],
+            incomes: [],
+            categories: [],
+            savingsGoal: { amount: 0 },
+            categoryBudgets: {},
+            lastModified: 0,
+        };
+
+        //=========================================
+        // CONTEXTS
+        //=========================================
+        const LanguageContext = React.createContext();
+
+        function LanguageProvider({ children }) {
+            const [language, setLanguage] = useLocalStorage('language', 'en');
+            const [currency, setCurrency] = useLocalStorage('currency', 'USD');
+
+            const locale = React.useMemo(() => (language === 'it' ? 'it-IT' : 'en-US'), [language]);
+            
+            const t = React.useCallback((key, replacements = {}) => {
+                let translation = translations[language][key] || key;
+                Object.keys(replacements).forEach(placeholder => {
+                    translation = translation.replace(`{${placeholder}}`, String(replacements[placeholder]));
+                });
+                return translation;
+            }, [language]);
+
+            const formatCurrency = React.useCallback((amount) => {
+                return new Intl.NumberFormat(locale, { style: 'currency', currency }).format(amount);
+            }, [locale, currency]);
+
+            const value = { language, setLanguage, t, locale, currency, setCurrency, formatCurrency };
+
+            return (
+                <LanguageContext.Provider value={value}>
+                    {children}
+                </LanguageContext.Provider>
+            );
+        }
+
+        const useTranslation = () => React.useContext(LanguageContext);
+
+        const ThemeContext = React.createContext();
+
+        function ThemeProvider({ children }) {
+            const [theme, setTheme] = useLocalStorage('theme', 'light');
+
+            React.useEffect(() => {
+                const root = window.document.documentElement;
+                if (theme === 'dark') {
+                    root.classList.add('dark');
+                } else {
+                    root.classList.remove('dark');
+                }
+            }, [theme]);
+
+            const toggleTheme = () => {
+                setTheme(prevTheme => (prevTheme === 'light' ? 'dark' : 'light'));
+            };
+
+            return (
+                <ThemeContext.Provider value={{ theme, toggleTheme }}>
+                    {children}
+                </ThemeContext.Provider>
+            );
+        }
+
+        const useTheme = () => React.useContext(ThemeContext);
+
+        //=========================================
+        // COMPONENTS
+        //=========================================
+        function Modal({ isOpen, onClose, title, children, size = 'md' }) {
+            const { t } = useTranslation();
+            if (!isOpen) return null;
+
+            const sizeClasses = {
+                sm: 'max-w-md',
+                md: 'max-w-lg',
+                lg: 'max-w-2xl',
+                xl: 'max-w-4xl',
+            };
+
+            const handleBackdropClick = (e) => {
+                if (e.target === e.currentTarget) {
+                    onClose();
+                }
+            };
+
+            const modalContent = (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-60 transition-opacity"
+                    onClick={handleBackdropClick}
+                    role="presentation"
+                >
+                    <div
+                        className={`relative w-full ${sizeClasses[size]} p-6 bg-white rounded-2xl shadow-xl dark:bg-gray-800 transform transition-all`}
+                        role="dialog"
+                        aria-modal="true"
+                        aria-labelledby="modal-title"
+                    >
+                        <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-gray-700">
+                            <h2 id="modal-title" className="text-xl font-bold text-slate-800 dark:text-white">
+                                {title}
+                            </h2>
+                            <button
+                                type="button"
+                                onClick={onClose}
+                                className="p-1 text-slate-500 rounded-full hover:bg-slate-200 dark:hover:bg-gray-700 dark:text-slate-400"
+                                aria-label={t('close')}
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        <div className="mt-4">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+
+            return ReactDOM.createPortal(modalContent, document.getElementById('modal-root'));
+        }
+
+        function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, confirmText, confirmButtonClassName }) {
+          const { t } = useTranslation();
+          
+          return (
+            <Modal isOpen={isOpen} onClose={onClose} title={title} size="sm">
+              <div className="space-y-6">
+                <p className="text-slate-600 dark:text-slate-300">{message}</p>
+                <div className="flex justify-end pt-4 space-x-3">
+                  <button
+                    type="button"
+                    onClick={onClose}
+                    className="px-5 py-2.5 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300 dark:bg-gray-600 dark:text-slate-200 dark:hover:bg-gray-500 font-semibold transition-colors"
+                  >
+                    {t('formCancel')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={onConfirm}
+                    className={confirmButtonClassName || "px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 font-semibold transition-colors"}
+                  >
+                    {confirmText || t('delete')}
+                  </button>
+                </div>
+              </div>
+            </Modal>
+          );
+        }
+
+        function ExpenseForm({ onSubmit, onClose, accounts, expenseToEdit, categories }) {
+          const { t } = useTranslation();
+          
+          const getInitialFormData = () => ({
+            title: '',
+            amount: '',
+            category: categories[0] || '',
+            date: new Date().toISOString().split('T')[0],
+            accountId: accounts[0]?.id || '',
+            recurrence: Recurrence.NONE,
+          });
+          
+          const [formData, setFormData] = React.useState(getInitialFormData());
+
+          React.useEffect(() => {
+            if (expenseToEdit) {
+              setFormData({
+                title: expenseToEdit.title,
+                amount: String(expenseToEdit.amount),
+                category: expenseToEdit.category,
+                date: expenseToEdit.date,
+                accountId: expenseToEdit.accountId,
+                recurrence: expenseToEdit.recurrence,
+              });
+            } else {
+                setFormData(getInitialFormData());
+            }
+          }, [expenseToEdit, categories, accounts]);
+
+          const handleChange = (e) => {
+            const { name, value } = e.target;
+            if (name === 'amount') {
+              const numericValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+              setFormData(prev => ({ ...prev, [name]: numericValue }));
+            } else {
+              setFormData(prev => ({ ...prev, [name]: value }));
+            }
+          };
+
+          const handleSubmit = (e) => {
+            e.preventDefault();
+            const numericAmount = parseFloat(formData.amount);
+            if (!formData.title || isNaN(numericAmount) || numericAmount <= 0 || !formData.accountId || !formData.category) {
+                alert(t('formRequiredFields'));
+                return;
+            }
+            onSubmit({
+                ...formData,
+                amount: numericAmount,
+            });
+          };
+          
+          const inputClasses = "mt-1 block w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-900 dark:text-white";
+
+          return (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formTitle')}</label>
+                <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} className={inputClasses} required />
+              </div>
+              <div>
+                <label htmlFor="amount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formAmount')}</label>
+                <input type="text" inputMode="decimal" name="amount" id="amount" value={formData.amount} onChange={handleChange} className={inputClasses} required placeholder="0.00" />
+              </div>
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formCategory')}</label>
+                <select name="category" id="category" value={formData.category} onChange={handleChange} className={inputClasses}>
+                  {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="date" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formDate')}</label>
+                <input type="date" name="date" id="date" value={formData.date} onChange={handleChange} className={inputClasses} required />
+              </div>
+              <div>
+                <label htmlFor="accountId" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formAccount')}</label>
+                <select name="accountId" id="accountId" value={formData.accountId} onChange={handleChange} className={inputClasses} required>
+                  {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                </select>
+              </div>
+               <div>
+                <label htmlFor="recurrence" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formRecurrence')}</label>
+                <select name="recurrence" id="recurrence" value={formData.recurrence} onChange={handleChange} className={inputClasses}>
+                  {Object.values(Recurrence).map(rec => <option key={rec} value={rec}>{t(`recurrence_${rec}`)}</option>)}
+                </select>
+              </div>
+              <div className="flex justify-end pt-4 space-x-3">
+                <button type="button" onClick={onClose} className="px-5 py-2.5 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300 dark:bg-gray-600 dark:text-slate-200 dark:hover:bg-gray-500 font-semibold transition-colors">{t('formCancel')}</button>
+                <button type="submit" className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 font-semibold transition-colors">{t('formSaveExpense')}</button>
+              </div>
+            </form>
+          );
+        }
+
+        function IncomeForm({ onSubmit, onClose, accounts, incomeToEdit }) {
+            const { t } = useTranslation();
+
+            const getInitialFormData = () => ({
+                title: '',
+                amount: '',
+                date: new Date().toISOString().split('T')[0],
+                accountId: accounts[0]?.id || '',
+            });
+
+            const [formData, setFormData] = React.useState(getInitialFormData());
+
+            React.useEffect(() => {
+                if (incomeToEdit) {
+                    setFormData({
+                        title: incomeToEdit.title,
+                        amount: String(incomeToEdit.amount),
+                        date: incomeToEdit.date,
+                        accountId: incomeToEdit.accountId,
+                    });
+                } else {
+                    setFormData(getInitialFormData());
+                }
+            }, [incomeToEdit, accounts]);
+
+            const handleChange = (e) => {
+                const { name, value } = e.target;
+                if (name === 'amount') {
+                    const numericValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+                    setFormData(prev => ({ ...prev, [name]: numericValue }));
+                } else {
+                    setFormData(prev => ({ ...prev, [name]: value }));
+                }
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const numericAmount = parseFloat(formData.amount);
+                if (!formData.title || isNaN(numericAmount) || numericAmount <= 0 || !formData.accountId) {
+                    alert(t('formRequiredFields'));
+                    return;
+                }
+                onSubmit({
+                    ...formData,
+                    amount: numericAmount,
+                });
+            };
+
+            const inputClasses = "mt-1 block w-full px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-900 dark:text-white";
+
+            return (
+                <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label htmlFor="title" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formTitle')}</label>
+                    <input type="text" name="title" id="title" value={formData.title} onChange={handleChange} className={inputClasses} required />
+                </div>
+                <div>
+                    <label htmlFor="amount" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formAmount')}</label>
+                    <input type="text" inputMode="decimal" name="amount" id="amount" value={formData.amount} onChange={handleChange} className={inputClasses} required placeholder="0.00" />
+                </div>
+                <div>
+                    <label htmlFor="date" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formDate')}</label>
+                    <input type="date" name="date" id="date" value={formData.date} onChange={handleChange} className={inputClasses} required />
+                </div>
+                <div>
+                    <label htmlFor="accountId" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('formAccount')}</label>
+                    <select name="accountId" id="accountId" value={formData.accountId} onChange={handleChange} className={inputClasses} required>
+                    {accounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                    </select>
+                </div>
+                <div className="flex justify-end pt-4 space-x-3">
+                    <button type="button" onClick={onClose} className="px-5 py-2.5 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300 dark:bg-gray-600 dark:text-slate-200 dark:hover:bg-gray-500 font-semibold transition-colors">{t('formCancel')}</button>
+                    <button type="submit" className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 font-semibold transition-colors">{t('formSaveIncome')}</button>
+                </div>
+                </form>
+            );
+        }
+
+        function LanguageToggle() {
+            const { language, setLanguage } = useTranslation();
+
+            const activeClasses = 'bg-indigo-600 text-white shadow-sm';
+            const inactiveClasses = 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-gray-600';
+
+            return (
+                <div className="mt-1 flex items-center p-1 space-x-1 bg-slate-100 dark:bg-gray-700 rounded-lg w-full">
+                <button
+                    onClick={() => setLanguage('en')}
+                    className={`w-1/2 text-center px-3 py-1 text-sm font-semibold rounded-md transition-colors ${language === 'en' ? activeClasses : inactiveClasses}`}
+                >
+                    EN
+                </button>
+                <button
+                    onClick={() => setLanguage('it')}
+                    className={`w-1/2 text-center px-3 py-1 text-sm font-semibold rounded-md transition-colors ${language === 'it' ? activeClasses : inactiveClasses}`}
+                >
+                    IT
+                </button>
+                </div>
+            );
+        }
+        
+        function Settings({
+            accounts, categories, savingsGoal, categoryBudgets,
+            onAccountAdd, onAccountDelete, onCategoryAdd, onCategoryDelete,
+            onSavingsGoalSet, onCategoryBudgetsSet, currency, setCurrency,
+            theme, toggleTheme
+        }) {
+            const { t, formatCurrency } = useTranslation();
+            const [activeTab, setActiveTab] = React.useState('management');
+            
+            const [newAccountName, setNewAccountName] = React.useState('');
+            const [newAccountBalance, setNewAccountBalance] = React.useState('');
+            const [newCategory, setNewCategory] = React.useState('');
+            
+            const [accountToDelete, setAccountToDelete] = React.useState(null);
+            const [categoryToDelete, setCategoryToDelete] = React.useState(null);
+
+            const handleNumericInputChange = (setter) => (e) => {
+                const { value } = e.target;
+                const numericValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+                setter(numericValue);
+            };
+            
+            const handleAddAccount = (e) => {
+                e.preventDefault();
+                const balance = parseFloat(newAccountBalance);
+                if (newAccountName && !isNaN(balance)) {
+                onAccountAdd({ name: newAccountName, initialBalance: balance });
+                setNewAccountName('');
+                setNewAccountBalance('');
+                }
+            };
+            
+            const handleAddCategory = (e) => {
+                e.preventDefault();
+                if (newCategory && !categories.includes(newCategory)) {
+                    onCategoryAdd(newCategory);
+                    setNewCategory('');
+                }
+            }
+
+            const handleGoalChange = (e) => {
+                const { value } = e.target;
+                const numericValue = value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+                onSavingsGoalSet({ amount: parseFloat(numericValue) || 0 });
+            };
+
+            const handleBudgetChange = (category, value) => {
+                const numericValue = parseFloat(value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1')) || 0;
+                const newBudgets = { ...categoryBudgets };
+                if (numericValue > 0) {
+                newBudgets[category] = numericValue;
+                } else {
+                delete newBudgets[category];
+                }
+                onCategoryBudgetsSet(newBudgets);
+            }
+
+            const inputClasses = "mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm text-slate-900 dark:text-white";
+            const buttonClasses = "px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 font-semibold transition-colors disabled:opacity-50";
+            
+            const tabClasses = (tabName) => 
+                `whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors focus:outline-none ${
+                activeTab === tabName
+                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-300 dark:hover:border-gray-600'
+                }`;
+
+            return (
+                <div className="space-y-8 max-w-4xl mx-auto">
+                <div className="border-b border-slate-200 dark:border-gray-700">
+                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button onClick={() => setActiveTab('management')} className={tabClasses('management')}>
+                            {t('settingsManagementTitle')}
+                        </button>
+                        <button onClick={() => setActiveTab('appearance')} className={tabClasses('appearance')}>
+                            {t('settingsAppearanceTitle')}
+                        </button>
+                    </nav>
+                </div>
+                
+                {activeTab === 'appearance' && (
+                    <div className="space-y-6 animate-fade-in">
+                    <section className="p-6 bg-white border rounded-lg shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('settingsTheme')}</h3>
+                        <div className="flex items-center justify-between">
+                            <label htmlFor="dark-mode-toggle" className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                {t('settingsDarkMode')}
+                            </label>
+                            <button
+                                id="dark-mode-toggle"
+                                onClick={toggleTheme}
+                                className={`relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 focus:ring-indigo-500 ${theme === 'dark' ? 'bg-indigo-600' : 'bg-gray-200'}`}
+                                role="switch"
+                                aria-checked={theme === 'dark'}
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className={`${theme === 'dark' ? 'translate-x-5' : 'translate-x-0'} pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform ring-0 transition ease-in-out duration-200`}
+                                />
+                            </button>
+                        </div>
+                    </section>
+
+                    <section className="p-6 bg-white border rounded-lg shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('settingsLanguageAndCurrency')}</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('settingsLanguage')}</label>
+                                <LanguageToggle />
+                            </div>
+                            <div>
+                                <label htmlFor="currency" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('settingsCurrency')}</label>
+                                <select id="currency" value={currency} onChange={e => setCurrency(e.target.value)} className={inputClasses}>
+                                    <option value="USD">{t('currency_USD')}</option>
+                                    <option value="EUR">{t('currency_EUR')}</option>
+                                    <option value="GBP">{t('currency_GBP')}</option>
+                                    <option value="JPY">{t('currency_JPY')}</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+                    </div>
+                )}
+                
+                {activeTab === 'management' && (
+                    <div className="space-y-6 animate-fade-in">
+                    <section className="p-6 bg-white border rounded-lg shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('settingsAccounts')}</h3>
+                        <ul className="space-y-3 mb-4">
+                            {accounts.map(acc => (
+                                <li key={acc.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-gray-700 rounded-md">
+                                    <div>
+                                    <p className="font-semibold text-slate-800 dark:text-slate-200">{acc.name}</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">{t('settingsInitialBalance')}: {formatCurrency(acc.initialBalance)}</p>
+                                    </div>
+                                    <button onClick={() => setAccountToDelete(acc)} className="font-medium text-rose-600 dark:text-rose-500 hover:underline">{t('delete')}</button>
+                                </li>
+                            ))}
+                            {accounts.length === 0 && <p className="text-slate-500 dark:text-slate-400">{t('noAccounts')}</p>}
+                        </ul>
+                        <form onSubmit={handleAddAccount} className="flex flex-col sm:flex-row gap-4 items-end">
+                        <div className="flex-grow">
+                            <label htmlFor="accountName" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('settingsAccountName')}</label>
+                            <input type="text" id="accountName" value={newAccountName} onChange={e => setNewAccountName(e.target.value)} className={inputClasses} placeholder={t('placeholder_checking')} required/>
+                        </div>
+                        <div className="flex-grow">
+                            <label htmlFor="initialBalance" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('settingsInitialBalance')}</label>
+                            <input type="text" inputMode="decimal" id="initialBalance" value={newAccountBalance} onChange={handleNumericInputChange(setNewAccountBalance)} className={inputClasses} placeholder="0.00" required/>
+                        </div>
+                        <button type="submit" className={buttonClasses} disabled={!newAccountName || !newAccountBalance}>{t('settingsAddAccount')}</button>
+                        </form>
+                    </section>
+
+                    <section className="p-6 bg-white border rounded-lg shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('settingsCategories')}</h3>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                            {categories.map(cat => (
+                                <span key={cat} className="flex items-center bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300 text-sm font-medium px-2.5 py-1 rounded-full">
+                                    {cat}
+                                    <button onClick={() => setCategoryToDelete(cat)} className="ml-2 text-indigo-500 hover:text-indigo-700 dark:hover:text-indigo-400">&times;</button>
+                                </span>
+                            ))}
+                            {categories.length === 0 && <p className="text-slate-500 dark:text-slate-400">{t('noCategories')}</p>}
+                        </div>
+                        <form onSubmit={handleAddCategory} className="flex gap-4 items-end">
+                            <div className="flex-grow">
+                                <label htmlFor="categoryName" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('settingsCategoryName')}</label>
+                                <input type="text" id="categoryName" value={newCategory} onChange={e => setNewCategory(e.target.value)} className={inputClasses} placeholder={t('placeholder_groceries')} required/>
+                            </div>
+                            <button type="submit" className={buttonClasses} disabled={!newCategory}>{t('settingsAddCategory')}</button>
+                        </form>
+                    </section>
+                
+                    <section className="p-6 bg-white border rounded-lg shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('settingsGoalsAndBudgets')}</h3>
+                        <div className="space-y-6">
+                            <div>
+                                <label htmlFor="savingsGoal" className="block text-sm font-medium text-slate-700 dark:text-slate-300">{t('settingsMonthlySavingsGoal')}</label>
+                                <input type="text" inputMode="decimal" id="savingsGoal" value={savingsGoal.amount || ''} onChange={handleGoalChange} className={inputClasses} placeholder="0.00" />
+                            </div>
+                            <div>
+                                <h4 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('categoryBudgetsTitle')}</h4>
+                                <div className="space-y-4">
+                                    {categories.map(cat => (
+                                        <div key={cat} className="flex items-center justify-between">
+                                            <label htmlFor={`budget-${cat}`} className="text-sm font-medium text-slate-700 dark:text-slate-300">{cat}</label>
+                                            <input
+                                                type="text"
+                                                inputMode="decimal"
+                                                id={`budget-${cat}`}
+                                                value={categoryBudgets[cat] || ''}
+                                                onChange={e => handleBudgetChange(cat, e.target.value)}
+                                                className={`${inputClasses} mt-0 w-1/2 sm:w-1/3`}
+                                                placeholder="0.00"
+                                            />
+                                        </div>
+                                    ))}
+                                    {categories.length === 0 && <p className="text-slate-500 dark:text-slate-400">{t('noCategoriesForBudgets')}</p>}
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    </div>
+                )}
+                
+                <ConfirmationModal
+                    isOpen={!!accountToDelete}
+                    onClose={() => setAccountToDelete(null)}
+                    onConfirm={() => {
+                        if(accountToDelete) onAccountDelete(accountToDelete.id);
+                        setAccountToDelete(null);
+                    }}
+                    title={t('deleteAccountTitle')}
+                    message={t('deleteAccountMessage', { accountName: accountToDelete?.name || '' })}
+                />
+                <ConfirmationModal
+                    isOpen={!!categoryToDelete}
+                    onClose={() => setCategoryToDelete(null)}
+                    onConfirm={() => {
+                        if(categoryToDelete) onCategoryDelete(categoryToDelete);
+                        setCategoryToDelete(null);
+                    }}
+                    title={t('deleteCategoryTitle')}
+                    message={t('deleteCategoryMessage', { categoryName: categoryToDelete || '' })}
+                />
+
+                </div>
+            );
+        }
+        
+        const ProgressBar = ({ value, max, colorClass }) => {
+            const percentage = max > 0 ? (value / max) * 100 : 0;
+            
+            return (
+                <div className="w-full bg-slate-200 dark:bg-gray-700 rounded-full h-2.5">
+                <div
+                    className={`${colorClass} h-2.5 rounded-full transition-all duration-500`}
+                    style={{ width: `${Math.min(Math.abs(percentage), 100)}%` }}
+                ></div>
+                </div>
+            );
+        };
+
+        function GoalsAndBudgets({ expenses, incomes, savingsGoal, categoryBudgets, viewDate }) {
+            const { t, formatCurrency } = useTranslation();
+            
+            const selectedMonth = viewDate.getMonth();
+            const selectedYear = viewDate.getFullYear();
+
+            const monthlyExpenses = expenses.filter(exp => {
+                const expDate = new Date(exp.date);
+                return expDate.getMonth() === selectedMonth && expDate.getFullYear() === selectedYear;
+            });
+            
+            const monthlyIncomes = incomes.filter(inc => {
+                const incDate = new Date(inc.date);
+                return incDate.getMonth() === selectedMonth && incDate.getFullYear() === selectedYear;
+            });
+
+            const totalMonthlyIncome = monthlyIncomes.reduce((sum, inc) => sum + inc.amount, 0);
+            const totalMonthlyExpenses = monthlyExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+            const savedThisMonth = totalMonthlyIncome - totalMonthlyExpenses;
+
+            const categorySpending = Object.keys(categoryBudgets)
+                .map(cat => {
+                    const budget = categoryBudgets[cat];
+                    if (!budget || budget <= 0) return null;
+
+                    const spent = monthlyExpenses
+                        .filter(exp => exp.category === cat)
+                        .reduce((sum, exp) => sum + exp.amount, 0);
+
+                    return { category: cat, budget, spent };
+                })
+                .filter((item) => item !== null);
+
+            return (
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('goalsAndBudgetsTitle')}</h2>
+                
+                {savingsGoal && savingsGoal.amount > 0 && (
+                    <div className="mb-6">
+                        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('savingsGoal')}</h3>
+                        <div className="flex justify-between items-center mb-1 text-sm text-slate-600 dark:text-slate-400">
+                            <span>{t('savedThisMonth')}</span>
+                            <span className="font-medium">{formatCurrency(savedThisMonth)} / {formatCurrency(savingsGoal.amount)}</span>
+                        </div>
+                        <ProgressBar value={savedThisMonth} max={savingsGoal.amount} colorClass={savedThisMonth < 0 ? 'bg-red-500' : 'bg-indigo-500'}/>
+                    </div>
+                )}
+
+                {categorySpending.length > 0 && (
+                    <div>
+                        <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-300 mb-2">{t('categoryBudgetsTitle')}</h3>
+                        <div className="space-y-4">
+                            {categorySpending.map(item => (
+                                <div key={item.category}>
+                                    <div className="flex justify-between items-center mb-1 text-sm text-slate-600 dark:text-slate-400">
+                                        <span className="font-medium">{item.category}</span>
+                                        <span>{formatCurrency(item.spent)} / {formatCurrency(item.budget)}</span>
+                                    </div>
+                                    <ProgressBar value={item.spent} max={item.budget} colorClass={item.spent > item.budget ? 'bg-red-500' : 'bg-emerald-500'}/>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                
+                {(!savingsGoal || savingsGoal.amount <= 0) && categorySpending.length === 0 && (
+                    <div className="text-center p-4 border-2 border-dashed rounded-lg dark:border-gray-700">
+                        <p className="text-slate-500 dark:text-slate-400">{t('noGoalsSet')}</p>
+                    </div>
+                )}
+
+                </div>
+            );
+        }
+        
+        function BalanceSummary({ expenses, incomes, accounts, viewDate, selectedAccountIds }) {
+            const { formatCurrency, t } = useTranslation();
+
+            const selectedAccounts = accounts.filter(acc => selectedAccountIds.includes(acc.id));
+            
+            const initialBalance = selectedAccounts.reduce((sum, acc) => sum + acc.initialBalance, 0);
+
+            const totalExpensesAllTime = expenses
+                .filter(exp => selectedAccountIds.includes(exp.accountId))
+                .reduce((sum, exp) => sum + exp.amount, 0);
+
+            const totalIncomesAllTime = incomes
+                .filter(inc => selectedAccountIds.includes(inc.accountId))
+                .reduce((sum, inc) => sum + inc.amount, 0);
+                
+            const currentBalance = initialBalance + totalIncomesAllTime - totalExpensesAllTime;
+            
+            const monthlyExpenses = expenses
+                .filter(exp => {
+                const expDate = new Date(exp.date);
+                return selectedAccountIds.includes(exp.accountId) &&
+                        expDate.getMonth() === viewDate.getMonth() &&
+                        expDate.getFullYear() === viewDate.getFullYear();
+                })
+                .reduce((sum, exp) => sum + exp.amount, 0);
+
+            const monthlyIncomes = incomes
+                .filter(inc => {
+                const incDate = new Date(inc.date);
+                return selectedAccountIds.includes(inc.accountId) &&
+                        incDate.getMonth() === viewDate.getMonth() &&
+                        incDate.getFullYear() === viewDate.getFullYear();
+                })
+                .reduce((sum, inc) => sum + inc.amount, 0);
+
+            return (
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                <div className="p-6 text-center bg-white border rounded-2xl shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700 md:text-left">
+                    <h3 className="text-lg font-medium text-slate-500 dark:text-slate-400 md:text-sm">{t('currentBalance')}</h3>
+                    <p className="mt-2 text-4xl font-bold text-slate-800 dark:text-white md:text-3xl">{formatCurrency(currentBalance)}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-6 md:contents">
+                    <div className="p-6 text-center bg-white border rounded-2xl shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700 md:text-left">
+                    <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">{t('monthlyIncome')}</h3>
+                    <p className="mt-2 text-2xl font-bold text-emerald-500 md:text-3xl">{formatCurrency(monthlyIncomes)}</p>
+                    </div>
+
+                    <div className="p-6 text-center bg-white border rounded-2xl shadow-sm dark:bg-gray-800 border-slate-200 dark:border-gray-700 md:text-left">
+                    <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">{t('monthlyExpenses')}</h3>
+                    <p className="mt-2 text-2xl font-bold text-rose-500 md:text-3xl">{formatCurrency(monthlyExpenses)}</p>
+                    </div>
+                </div>
+                </div>
+            );
+        }
+
+        function MonthYearPicker({ currentDate, onChange, transactionMonths }) {
+            const { locale, t } = useTranslation();
+            const [displayYear, setDisplayYear] = React.useState(currentDate.getFullYear());
+            
+            const activeMonthsSet = React.useMemo(() => new Set(
+                transactionMonths.map(d => `${d.getFullYear()}-${d.getMonth()}`)
+            ), [transactionMonths]);
+
+            React.useEffect(() => {
+                setDisplayYear(currentDate.getFullYear());
+            }, [currentDate]);
+
+            const months = Array.from({ length: 12 }, (_, i) => {
+                const monthName = new Date(displayYear, i).toLocaleDateString(locale, { month: 'short' });
+                return monthName.charAt(0).toUpperCase() + monthName.slice(1);
+            });
+
+            const selectMonth = (monthIndex) => {
+                onChange(new Date(displayYear, monthIndex, 1));
+            };
+
+            return (
+                <div className="w-64">
+                <div className="flex items-center justify-between mb-4">
+                    <button
+                    onClick={() => setDisplayYear(displayYear - 1)}
+                    className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700"
+                    aria-label={t('previousYear')}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <span className="font-semibold text-slate-800 dark:text-slate-200">{displayYear}</span>
+                    <button
+                    onClick={() => setDisplayYear(displayYear + 1)}
+                    className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-gray-700"
+                    aria-label={t('nextYear')}
+                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+                <div className="grid grid-cols-4 gap-2">
+                    {months.map((month, index) => {
+                        const isCurrent = currentDate.getFullYear() === displayYear && currentDate.getMonth() === index;
+                        const isActive = activeMonthsSet.has(`${displayYear}-${index}`);
+
+                        return (
+                        <button
+                            key={month}
+                            onClick={() => selectMonth(index)}
+                            disabled={!isActive}
+                            className={`p-2 text-sm text-center rounded-md transition-colors ${
+                            isCurrent
+                                ? 'bg-indigo-600 text-white font-semibold'
+                                : isActive
+                                    ? 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-gray-700'
+                                    : 'text-slate-400 dark:text-gray-600 cursor-not-allowed'
+                            }`}
+                        >
+                            {month}
+                        </button>
+                        );
+                    })}
+                </div>
+                </div>
+            );
+        }
+
+        function DateNavigator({ viewDate, setViewDate, expenses, incomes }) {
+            const { locale, t } = useTranslation();
+            const [isPickerOpen, setIsPickerOpen] = React.useState(false);
+
+            const transactionMonths = React.useMemo(() => {
+                const dates = new Set();
+                [...expenses, ...incomes].forEach(item => {
+                    const d = new Date(item.date);
+                    dates.add(`${d.getFullYear()}-${d.getMonth()}`);
+                });
+                return Array.from(dates).map(dStr => {
+                    const [year, month] = dStr.split('-').map(Number);
+                    return new Date(year, month, 1);
+                });
+            }, [expenses, incomes]);
+
+            const handleDateChange = (date) => {
+                setViewDate(date);
+                setIsPickerOpen(false);
+            };
+            
+            const rawDate = viewDate.toLocaleDateString(locale, {
+                month: 'long',
+                year: 'numeric',
+            });
+            const formattedDate = rawDate.charAt(0).toUpperCase() + rawDate.slice(1);
+
+            return (
+                <>
+                <button 
+                    onClick={() => setIsPickerOpen(true)}
+                    className="flex items-center space-x-2 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-gray-700 transition-colors"
+                    aria-label={t('changeMonth')}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">
+                    {formattedDate}
+                    </span>
+                </button>
+                <Modal
+                    isOpen={isPickerOpen}
+                    onClose={() => setIsPickerOpen(false)}
+                    title={t('changeMonth')}
+                    size="sm"
+                >
+                    <div className="flex justify-center">
+                    <MonthYearPicker
+                        currentDate={viewDate}
+                        onChange={handleDateChange}
+                        transactionMonths={transactionMonths}
+                    />
+                    </div>
+                </Modal>
+                </>
+            );
+        }
+        
+        function MultiSelectDropdown({ options, selectedValues, onChange, placeholder, buttonClassName, isIconOnly = false }) {
+            const { t } = useTranslation();
+            const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+            const handleSelect = (value) => {
+                const newSelected = selectedValues.includes(value)
+                ? selectedValues.filter(v => v !== value)
+                : [...selectedValues, value];
+                onChange(newSelected);
+            };
+            
+            const handleSelectAll = () => {
+                if (selectedValues.length === options.length) {
+                    onChange([]);
+                } else {
+                    onChange(options.map(opt => opt.value));
+                }
+            }
+
+            const getButtonLabel = () => {
+                if (selectedValues.length === 0) return placeholder;
+                if (selectedValues.length === options.length) return t('allAccounts');
+                if (selectedValues.length === 1) {
+                    const selectedOption = options.find(opt => opt.value === selectedValues[0]);
+                    return selectedOption ? selectedOption.label : placeholder;
+                }
+                return `${selectedValues.length} ${t('accountsSelected')}`;
+            }
+            
+            const defaultButtonClasses = "w-full flex items-center justify-between px-4 py-2.5 bg-white dark:bg-gray-700 border border-slate-300 dark:border-gray-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500";
+
+
+            return (
+                <>
+                <button
+                    type="button"
+                    onClick={() => setIsModalOpen(true)}
+                    className={buttonClassName || defaultButtonClasses}
+                >
+                    {isIconOnly ? (
+                        <div className="flex items-center space-x-2">
+                            <div className="relative">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-slate-600 dark:text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                                </svg>
+                                {selectedValues.length > 0 && selectedValues.length < options.length && (
+                                <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-indigo-500 ring-2 ring-white dark:ring-gray-800"></span>
+                                )}
+                            </div>
+                            <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{getButtonLabel()}</span>
+                        </div>
+                    ) : (
+                    <>
+                        <span className="text-slate-800 dark:text-slate-200">{getButtonLabel()}</span>
+                        <svg className={`w-5 h-5 text-slate-500 transition-transform`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                        </svg>
+                    </>
+                    )}
+                </button>
+                
+                <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={placeholder} size="sm">
+                    <div className="max-h-96 overflow-y-auto -mx-6 -my-4">
+                    <ul className="py-2 space-y-1">
+                        <li className="px-2">
+                            <label className="flex items-center w-full px-2 py-2 text-sm font-medium text-slate-900 dark:text-white rounded-md hover:bg-slate-100 dark:hover:bg-gray-700 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={selectedValues.length === options.length}
+                                onChange={handleSelectAll}
+                                className="h-4 w-4 rounded border-slate-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span className="ml-3">{t('allAccounts')}</span>
+                            </label>
+                        </li>
+                        <div className="border-t border-slate-200 dark:border-gray-700 my-1 mx-4"></div>
+                        {options.map(option => (
+                        <li key={option.value} className="px-2">
+                            <label className="flex items-center w-full px-2 py-2 text-sm text-slate-900 dark:text-white rounded-md hover:bg-slate-100 dark:hover:bg-gray-700 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                value={option.value}
+                                checked={selectedValues.includes(option.value)}
+                                onChange={() => handleSelect(option.value)}
+                                className="h-4 w-4 rounded border-slate-300 dark:border-gray-600 text-indigo-600 focus:ring-indigo-500"
+                            />
+                            <span className="ml-3">{option.label}</span>
+                            </label>
+                        </li>
+                        ))}
+                    </ul>
+                    </div>
+                </Modal>
+                </>
+            );
+        }
+
+        function AnalysisChart({ expenses, incomes, selectedAccountIds, viewDate }) {
+            const { t, formatCurrency } = useTranslation();
+            const [view, setView] = React.useState('incomeVsExpense');
+            
+            const { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } = Recharts;
+
+            const { monthlyExpenses, totalMonthlyIncomes, totalMonthlyExpenses } = React.useMemo(() => {
+                const filteredExpenses = expenses.filter(exp => {
+                    const expDate = new Date(exp.date);
+                    return selectedAccountIds.includes(exp.accountId) &&
+                        expDate.getMonth() === viewDate.getMonth() &&
+                        expDate.getFullYear() === viewDate.getFullYear();
+                });
+                const filteredIncomes = incomes.filter(inc => {
+                    const incDate = new Date(inc.date);
+                    return selectedAccountIds.includes(inc.accountId) &&
+                        incDate.getMonth() === viewDate.getMonth() &&
+                        incDate.getFullYear() === viewDate.getFullYear();
+                });
+                
+                const totalIncomes = filteredIncomes.reduce((sum, inc) => sum + inc.amount, 0);
+                const totalExpenses = filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+                return { monthlyExpenses: filteredExpenses, totalMonthlyIncomes: totalIncomes, totalMonthlyExpenses: totalExpenses };
+            }, [expenses, incomes, selectedAccountIds, viewDate]);
+
+
+            const categoryChartData = React.useMemo(() => {
+                const dataByCategory = monthlyExpenses.reduce((acc, expense) => {
+                    acc[expense.category] = (acc[expense.category] || 0) + expense.amount;
+                    return acc;
+                }, {});
+
+                return Object.keys(dataByCategory).map(category => ({
+                    name: category,
+                    value: dataByCategory[category],
+                })).sort((a, b) => b.value - a.value);
+            }, [monthlyExpenses]);
+            
+            const incomeExpenseChartData = React.useMemo(() => [
+                { name: t('income'), value: totalMonthlyIncomes },
+                { name: t('expenses'), value: totalMonthlyExpenses },
+            ].filter(d => d.value > 0), [t, totalMonthlyIncomes, totalMonthlyExpenses]);
+
+            const CATEGORY_COLORS = ['#6366F1', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#3B82F6', '#F97316', '#EC4899'];
+            const INCOME_EXPENSE_COLORS = ['#10B981', '#EF4444'];
+            
+            const chartData = view === 'category' ? categoryChartData : incomeExpenseChartData;
+            const chartColors = view === 'category' ? CATEGORY_COLORS : INCOME_EXPENSE_COLORS;
+
+            const CustomTooltip = ({ active, payload }) => {
+                if (active && payload && payload.length) {
+                const data = payload[0];
+                return (
+                    <div className="p-2 bg-slate-800/80 text-white rounded-md border border-slate-700 shadow-lg">
+                    <p className="font-semibold">{`${data.name}`}</p>
+                    <p>{`${formatCurrency(data.value)} ${data.payload.percent ? `(${(data.payload.percent * 100).toFixed(0)}%)` : ''}`}</p>
+                    </div>
+                );
+                }
+                return null;
+            };
+            
+            const renderChart = () => {
+                if (chartData.length === 0) {
+                return (
+                    <div className="flex items-center justify-center h-64">
+                    <p className="text-slate-500 dark:text-slate-400">{t('noDataForChart')}</p>
+                    </div>
+                );
+                }
+                
+                return (
+                <div style={{ width: '100%', height: 300 }}>
+                    <ResponsiveContainer>
+                    <PieChart>
+                        <Pie
+                        data={chartData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        innerRadius={60}
+                        fill="#8884d8"
+                        dataKey="value"
+                        nameKey="name"
+                        paddingAngle={2}
+                        >
+                        {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={chartColors[index % chartColors.length]} stroke={chartColors[index % chartColors.length]} />
+                        ))}
+                        </Pie>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend 
+                            iconType="circle" 
+                            wrapperStyle={{ paddingTop: '20px' }}
+                            formatter={(value) => <span className="text-slate-600 dark:text-slate-300 ml-2">{value}</span>}
+                        />
+                    </PieChart>
+                    </ResponsiveContainer>
+                </div>
+                );
+            }
+
+            const tabButtonClasses = (isActive) => 
+                `w-full text-center px-3 py-2 text-sm font-semibold rounded-md transition-colors ${
+                    isActive
+                    ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-gray-600/50'
+                }`;
+
+            return (
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700">
+                <div className="flex flex-col sm:flex-row justify-end sm:items-center mb-4 gap-4">
+                    <div className="flex items-center p-1 space-x-1 bg-slate-100 dark:bg-gray-700 rounded-lg w-full sm:w-auto">
+                    <button onClick={() => setView('incomeVsExpense')} className={tabButtonClasses(view === 'incomeVsExpense')}>
+                        {t('income')} vs {t('expenses')}
+                    </button>
+                    <button onClick={() => setView('category')} className={tabButtonClasses(view === 'category')}>
+                        {t('overview')}
+                    </button>
+                    </div>
+                </div>
+                {renderChart()}
+                </div>
+            );
+        }
+
+        function TransactionList({ transactions: { expenses, incomes }, accounts, onEdit, onDelete }) {
+            const { t, formatCurrency, locale } = useTranslation();
+
+            const getAccountName = (accountId) => {
+                return accounts.find(acc => acc.id === accountId)?.name || 'Unknown Account';
+            };
+            
+            const combinedTransactions = [
+                ...expenses.map(exp => ({ ...exp, type: 'expense' })),
+                ...incomes.map(inc => ({ ...inc, type: 'income' })),
+            ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+            return (
+                <div className="bg-white dark:bg-slate-900 p-6 rounded-lg shadow-md">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-4">{t('allTransactions')}</h2>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left text-slate-500 dark:text-slate-400">
+                        <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-800 dark:text-slate-400">
+                            <tr>
+                                <th scope="col" className="px-6 py-3">{t('tableTitle')}</th>
+                                <th scope="col" className="px-6 py-3">{t('tableAmount')}</th>
+                                <th scope="col" className="px-6 py-3">{t('tableCategory')}</th>
+                                <th scope="col" className="px-6 py-3">{t('tableDate')}</th>
+                                <th scope="col" className="px-6 py-3">{t('tableAccount')}</th>
+                                <th scope="col" className="px-6 py-3">{t('tableActions')}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {combinedTransactions.map(trx => (
+                                <tr key={trx.id} className="bg-white border-b dark:bg-slate-900 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700">
+                                    <td className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap dark:text-white">{trx.title}</td>
+                                    <td className={`px-6 py-4 font-semibold ${trx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    {trx.type === 'income' ? '+' : '-'} {formatCurrency(trx.amount)}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                    {trx.type === 'expense' ? trx.category : <span className="font-medium text-emerald-600 dark:text-emerald-400">{t('income')}</span>}
+                                    </td>
+                                    <td className="px-6 py-4">{new Date(trx.date).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}</td>
+                                    <td className="px-6 py-4">{getAccountName(trx.accountId)}</td>
+                                    <td className="px-6 py-4 space-x-2">
+                                        <button type="button" onClick={() => onEdit(trx)} className="font-medium text-sky-600 dark:text-sky-500 hover:underline">{t('edit')}</button>
+                                        <button type="button" onClick={() => onDelete(trx)} className="font-medium text-rose-600 dark:text-rose-500 hover:underline">{t('delete')}</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                {combinedTransactions.length === 0 && (
+                    <p className="text-center text-slate-500 dark:text-slate-400 mt-4">{t('noTransactionsRecorded')}</p>
+                )}
+                </div>
+            );
+        }
+        
+        function TransactionsView({
+            expenses,
+            incomes,
+            accounts,
+            onEdit,
+            onDelete,
+            selectedAccountIds,
+            viewDate,
+        }) {
+            const filteredTransactions = React.useMemo(() => {
+                const selectedMonth = viewDate.getMonth();
+                const selectedYear = viewDate.getFullYear();
+
+                const filteredExpenses = expenses.filter(exp => {
+                const expDate = new Date(exp.date);
+                return selectedAccountIds.includes(exp.accountId) &&
+                        expDate.getMonth() === selectedMonth &&
+                        expDate.getFullYear() === selectedYear;
+                });
+
+                const filteredIncomes = incomes.filter(inc => {
+                const incDate = new Date(inc.date);
+                return selectedAccountIds.includes(inc.accountId) &&
+                        incDate.getMonth() === selectedMonth &&
+                        incDate.getFullYear() === selectedYear;
+                });
+                
+                return { expenses: filteredExpenses, incomes: filteredIncomes };
+            }, [expenses, incomes, selectedAccountIds, viewDate]);
+
+            return (
+                <div className="space-y-8">
+                <AnalysisChart 
+                    expenses={expenses}
+                    incomes={incomes}
+                    selectedAccountIds={selectedAccountIds} 
+                    viewDate={viewDate} 
+                />
+                <TransactionList
+                    transactions={filteredTransactions}
+                    accounts={accounts}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                />
+                </div>
+            );
+        }
+        
+        function RecentTransactions({
+            expenses,
+            incomes,
+            accounts,
+            selectedAccountIds,
+            onViewAllClick,
+            onEdit,
+            onDelete,
+        }) {
+            const { t, formatCurrency, locale } = useTranslation();
+
+            const getAccountName = (accountId) => {
+                return accounts.find(acc => acc.id === accountId)?.name || 'Unknown Account';
+            };
+
+            const recentTransactions = React.useMemo(() => {
+                const filteredExpenses = expenses.filter(exp => selectedAccountIds.includes(exp.accountId));
+                const filteredIncomes = incomes.filter(inc => selectedAccountIds.includes(inc.accountId));
+
+                const combined = [
+                    ...filteredExpenses.map(exp => ({ ...exp, type: 'expense' })),
+                    ...filteredIncomes.map(inc => ({ ...inc, type: 'income' })),
+                ];
+
+                return combined
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                    .slice(0, 5);
+            }, [expenses, incomes, selectedAccountIds]);
+
+            const TransactionIcon = ({ type }) => {
+                if (type === 'income') {
+                return (
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                    </svg>
+                    </div>
+                );
+                }
+                return (
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/50 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4" />
+                    </svg>
+                </div>
+                );
+            };
+            
+            return (
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700">
+                <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-4">{t('recentTransactionsTitle')}</h2>
+                
+                {recentTransactions.length > 0 ? (
+                    <ul className="divide-y divide-slate-200 dark:divide-gray-700">
+                    {recentTransactions.map(trx => (
+                        <li key={trx.id} className="py-4 flex items-center justify-between group">
+                            <div className="flex items-center space-x-4">
+                                <TransactionIcon type={trx.type} />
+                                <div className="flex-grow">
+                                    <p className="font-semibold text-slate-800 dark:text-white">{trx.title}</p>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                                    {new Date(trx.date).toLocaleDateString(locale, { month: 'short', day: 'numeric' })} · {getAccountName(trx.accountId)}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                                <p className={`font-bold ${trx.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    {trx.type === 'income' ? '+' : '-'} {formatCurrency(trx.amount)}
+                                </p>
+                                <div className="opacity-0 group-hover:opacity-100 transition-opacity space-x-2">
+                                    <button onClick={() => onEdit(trx)} className="p-1 text-sky-600 dark:text-sky-500 hover:text-sky-800 dark:hover:text-sky-400" aria-label={t('edit')}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                                            <path fillRule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                    <button onClick={() => onDelete(trx)} className="p-1 text-rose-600 dark:text-rose-500 hover:text-rose-800 dark:hover:text-rose-400" aria-label={t('delete')}>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm4 0a1 1 0 012 0v6a1 1 0 11-2 0V8z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>
+                    ))}
+                    </ul>
+                ) : (
+                    <div className="text-center py-8">
+                    <p className="text-slate-500 dark:text-slate-400">{t('noRecentTransactions')}</p>
+                    </div>
+                )}
+
+                {expenses.length > 0 || incomes.length > 0 ? (
+                    <div className="mt-6 text-center">
+                    <button
+                        onClick={onViewAllClick}
+                        className="w-full sm:w-auto px-6 py-2 bg-slate-100 text-slate-700 dark:bg-gray-700 dark:text-slate-200 font-semibold rounded-lg hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors"
+                    >
+                        {t('viewAllTransactions')}
+                    </button>
+                    </div>
+                ) : null}
+                </div>
+            );
+        }
+
+        //=========================================
+        // MAIN APP COMPONENT
+        //=========================================
+        function App() {
+            const [state, setState] = useLocalStorage('appState', INITIAL_APP_STATE);
+            const { accounts, expenses, incomes, categories, savingsGoal, categoryBudgets } = state;
+
+            const [view, setView] = React.useState('dashboard');
+            const [modal, setModal] = React.useState(null);
+            const [viewDate, setViewDate] = React.useState(new Date());
+            
+            const { t, currency, setCurrency } = useTranslation();
+            const { theme, toggleTheme } = useTheme();
+
+            const [selectedAccountIds, setSelectedAccountIds] = React.useState(() => accounts.map(a => a.id));
+
+            React.useEffect(() => {
+                setSelectedAccountIds(prev => {
+                    const existingAccountIds = new Set(accounts.map(a => a.id));
+                    const newSelection = prev.filter(id => existingAccountIds.has(id));
+                    if (newSelection.length === 0 && accounts.length > 0) {
+                        return accounts.map(a => a.id);
+                    }
+                    return newSelection;
+                });
+            }, [accounts]);
+            
+            const updateState = React.useCallback((updater) => {
+                setState(prev => ({ ...updater(prev), lastModified: Date.now() }));
+            }, [setState]);
+
+            const handleAddAccount = (accountData) => {
+                updateState(prev => ({ ...prev, accounts: [...prev.accounts, { ...accountData, id: uuid.v4() }] }));
+            };
+
+            const handleDeleteAccount = (id) => {
+                updateState(prev => ({
+                    ...prev,
+                    accounts: prev.accounts.filter(acc => acc.id !== id),
+                    expenses: prev.expenses.filter(exp => exp.accountId !== id),
+                    incomes: prev.incomes.filter(inc => inc.accountId !== id),
+                }));
+            };
+            
+            const handleAddExpense = (expenseData) => {
+                updateState(prev => ({ ...prev, expenses: [...prev.expenses, { ...expenseData, id: uuid.v4() }] }));
+                setModal(null);
+            };
+            
+            const handleUpdateExpense = (expenseData) => {
+                updateState(prev => ({ ...prev, expenses: prev.expenses.map(e => e.id === expenseData.id ? expenseData : e) }));
+                setModal(null);
+            }
+
+            const handleDeleteTransaction = ({ id, type }) => {
+                if (type === 'expense') {
+                    updateState(prev => ({ ...prev, expenses: prev.expenses.filter(e => e.id !== id) }));
+                } else {
+                    updateState(prev => ({ ...prev, incomes: prev.incomes.filter(i => i.id !== id) }));
+                }
+                setModal(null);
+            };
+            
+            const handleAddIncome = (incomeData) => {
+                updateState(prev => ({ ...prev, incomes: [...prev.incomes, { ...incomeData, id: uuid.v4() }] }));
+                setModal(null);
+            };
+            
+            const handleUpdateIncome = (incomeData) => {
+                updateState(prev => ({ ...prev, incomes: prev.incomes.map(i => i.id === incomeData.id ? incomeData : i) }));
+                setModal(null);
+            }
+            
+            const handleAddCategory = (name) => {
+                if (name && !categories.includes(name)) {
+                    updateState(prev => ({...prev, categories: [...prev.categories, name].sort() }));
+                }
+            }
+
+            const handleDeleteCategory = (name) => {
+                updateState(prev => ({
+                    ...prev,
+                    categories: prev.categories.filter(c => c !== name),
+                }));
+            }
+
+            const handleSetSavingsGoal = (goal) => {
+                updateState(prev => ({...prev, savingsGoal: goal }));
+            }
+
+            const handleSetCategoryBudgets = (budgets) => {
+                updateState(prev => ({...prev, categoryBudgets: budgets }));
+            }
+
+            const filteredExpenses = React.useMemo(() => expenses.filter(exp => selectedAccountIds.includes(exp.accountId)), [expenses, selectedAccountIds]);
+            const filteredIncomes = React.useMemo(() => incomes.filter(inc => selectedAccountIds.includes(inc.accountId)), [incomes, selectedAccountIds]);
+            
+            const accountOptions = React.useMemo(() => accounts.map(acc => ({ label: acc.name, value: acc.id })), [accounts]);
+            
+            const handleEditTransaction = (trx) => {
+                if (trx.type === 'expense') setModal({ type: 'expense', expense: trx });
+                else setModal({ type: 'income', income: trx });
+            }
+
+            return (
+                <div className="bg-slate-50 dark:bg-black text-slate-800 dark:text-slate-200 min-h-screen font-sans">
+                <header className="bg-white dark:bg-slate-900/70 backdrop-blur-sm sticky top-0 z-40 border-b border-slate-200 dark:border-slate-800">
+                    <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex items-center justify-between h-16">
+                            <div className="flex items-center space-x-2">
+                                <svg className="h-8 w-8 text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 10v-1m0 0c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <div className="md:hidden">
+                                {view !== 'settings' && accounts.length > 0 && (
+                                    <MultiSelectDropdown
+                                    options={accountOptions}
+                                    selectedValues={selectedAccountIds}
+                                    onChange={setSelectedAccountIds}
+                                    placeholder={t('selectAccounts')}
+                                    isIconOnly={true}
+                                    buttonClassName="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-gray-700 relative"
+                                    />
+                                )}
+                                </div>
+                                <nav className="hidden md:flex items-center space-x-1">
+                                    <button onClick={() => setView('dashboard')} className={`px-3 py-2 text-sm font-medium rounded-md ${view === 'dashboard' ? 'bg-slate-200 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-gray-800'}`}>{t('dashboard')}</button>
+                                    <button onClick={() => setView('transactions')} className={`px-3 py-2 text-sm font-medium rounded-md ${view === 'transactions' ? 'bg-slate-200 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-gray-800'}`}>{t('transactions')}</button>
+                                    <button onClick={() => setView('settings')} className={`px-3 py-2 text-sm font-medium rounded-md ${view === 'settings' ? 'bg-slate-200 dark:bg-gray-700 text-indigo-600 dark:text-indigo-400' : 'hover:bg-slate-100 dark:hover:bg-gray-800'}`}>{t('settings')}</button>
+                                </nav>
+                            </div>
+                            
+                            <div className="flex items-center space-x-4">
+                            {view !== 'settings' && accounts.length > 0 && (
+                                <DateNavigator viewDate={viewDate} setViewDate={setViewDate} expenses={expenses} incomes={incomes} />
+                            )}
+                            </div>
+                        </div>
+                    </div>
+                </header>
+                
+                <main className="container mx-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-8">
+                    {accounts.length === 0 && view !== 'settings' ? (
+                        <div className="text-center p-10 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                            <h2 className="text-2xl font-bold mb-2">{t('welcome')}</h2>
+                            <p className="text-slate-600 dark:text-slate-400 mb-4">{t('getStarted')}</p>
+                            <button onClick={() => setView('settings')} className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-semibold">{t('addFirstAccount')}</button>
+                        </div>
+                    ) : (
+                    <>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
+                            <div className="hidden md:block">
+                            {view !== 'settings' && accounts.length > 0 && <MultiSelectDropdown options={accountOptions} selectedValues={selectedAccountIds} onChange={setSelectedAccountIds} placeholder={t('selectAccounts')} />}
+                            </div>
+                            <div className="flex-grow"></div>
+                            <div className="w-full sm:w-auto sm:ml-auto flex items-center justify-center gap-4">
+                            {view !== 'settings' && accounts.length > 0 && (
+                                <>
+                                <button onClick={() => setModal({type: 'income'})} className="flex-1 sm:flex-none px-6 py-4 bg-emerald-500 text-white rounded-xl hover:bg-emerald-600 font-semibold text-base transition-colors shadow-md hover:shadow-lg">{t('addIncome')}</button>
+                                <button onClick={() => setModal({type: 'expense'})} className="flex-1 sm:flex-none px-6 py-4 bg-rose-500 text-white rounded-xl hover:bg-rose-600 font-semibold text-base transition-colors shadow-md hover:shadow-lg">{t('addExpense')}</button>
+                                </>
+                            )}
+                            </div>
+                        </div>
+                        
+                        {view === 'dashboard' && (
+                        <div className="space-y-8">
+                            <BalanceSummary expenses={filteredExpenses} incomes={filteredIncomes} accounts={accounts} viewDate={viewDate} selectedAccountIds={selectedAccountIds} />
+                            <GoalsAndBudgets expenses={filteredExpenses} incomes={filteredIncomes} savingsGoal={savingsGoal} categoryBudgets={categoryBudgets} viewDate={viewDate} />
+                            <RecentTransactions
+                            expenses={expenses}
+                            incomes={incomes}
+                            accounts={accounts}
+                            selectedAccountIds={selectedAccountIds}
+                            onViewAllClick={() => setView('transactions')}
+                            onEdit={handleEditTransaction}
+                            onDelete={(trx) => setModal({ type: 'delete-transaction', transaction: trx })}
+                            />
+                        </div>
+                        )}
+                        {view === 'transactions' && (
+                        <TransactionsView expenses={expenses} incomes={incomes} accounts={accounts} onEdit={handleEditTransaction} onDelete={(trx) => setModal({ type: 'delete-transaction', transaction: trx })} selectedAccountIds={selectedAccountIds} viewDate={viewDate} />
+                        )}
+                        {view === 'settings' && (
+                        <Settings 
+                            accounts={accounts} 
+                            categories={categories} 
+                            savingsGoal={savingsGoal}
+                            categoryBudgets={categoryBudgets}
+                            onAccountAdd={handleAddAccount} 
+                            onAccountDelete={handleDeleteAccount}
+                            onCategoryAdd={handleAddCategory}
+                            onCategoryDelete={handleDeleteCategory}
+                            onSavingsGoalSet={handleSetSavingsGoal}
+                            onCategoryBudgetsSet={handleSetCategoryBudgets}
+                            currency={currency}
+                            setCurrency={setCurrency}
+                            theme={theme}
+                            toggleTheme={toggleTheme}
+                        />
+                        )}
+                    </>
+                    )}
+                </main>
+
+                <Modal
+                    isOpen={modal?.type === 'expense' || modal?.type === 'income'}
+                    onClose={() => setModal(null)}
+                    title={modal?.type === 'expense' ? (modal.expense ? t('editExpense') : t('addExpense')) : (modal?.type === 'income' ? (modal.income ? t('editIncome') : t('addIncome')) : '')}
+                >
+                    {modal?.type === 'expense' && (
+                    <ExpenseForm
+                        onSubmit={modal.expense ? (data) => handleUpdateExpense({ ...data, id: modal.expense.id }) : handleAddExpense}
+                        onClose={() => setModal(null)}
+                        accounts={accounts}
+                        expenseToEdit={modal.expense}
+                        categories={categories}
+                    />
+                    )}
+                    {modal?.type === 'income' && (
+                    <IncomeForm
+                        onSubmit={modal.income ? (data) => handleUpdateIncome({ ...data, id: modal.income.id }) : handleAddIncome}
+                        onClose={() => setModal(null)}
+                        accounts={accounts}
+                        incomeToEdit={modal.income}
+                    />
+                    )}
+                </Modal>
+
+                <ConfirmationModal
+                    isOpen={modal?.type === 'delete-transaction'}
+                    onClose={() => setModal(null)}
+                    onConfirm={() => modal?.type === 'delete-transaction' && handleDeleteTransaction(modal.transaction)}
+                    title={t('deleteTransactionTitle')}
+                    message={t('deleteTransactionMessage')}
+                />
+
+                <footer className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900/90 backdrop-blur-sm border-t border-slate-200 dark:border-slate-800 z-40">
+                    <nav className="flex justify-around items-center h-16">
+                    <button 
+                        onClick={() => setView('dashboard')} 
+                        className={`flex flex-col items-center justify-center w-full transition-colors ${view === 'dashboard' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400'}`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                        </svg>
+                        <span className="text-xs font-medium">{t('dashboard')}</span>
+                    </button>
+                    <button 
+                        onClick={() => setView('transactions')} 
+                        className={`flex flex-col items-center justify-center w-full transition-colors ${view === 'transactions' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400'}`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                        </svg>
+                        <span className="text-xs font-medium">{t('transactions')}</span>
+                    </button>
+                    <button 
+                        onClick={() => setView('settings')} 
+                        className={`flex flex-col items-center justify-center w-full transition-colors ${view === 'settings' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400'}`}
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span className="text-xs font-medium">{t('settings')}</span>
+                    </button>
+                    </nav>
+                </footer>
+                </div>
+            );
+        }
+
+        //=========================================
+        // RENDER THE APP
+        //=========================================
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(
+            <LanguageProvider>
+                <ThemeProvider>
+                    <App />
+                </ThemeProvider>
+            </LanguageProvider>
+        );
+
+        //+++++++++ END OF EMBEDDED APPLICATION CODE +++++++++
+    </script>
+</body>
 </html>

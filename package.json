@@ -9,10 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "18.2.0",
-    "recharts": "2.12.7",
-    "react-dom": "^19.1.1",
-    "uuid": "^11.1.0"
+
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
